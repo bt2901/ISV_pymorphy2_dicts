@@ -1,111 +1,91 @@
-name;description;parent;lemma form;divide by;opencorpora tags;comments
-post;чест молвы;aux;;;POST;
-nmbr;число;aux;;;NMbr;
-gndr;род;aux;;;GNdr;
-PErs;особа;aux;;;PErs;
-CAse;падеж;aux;;;CAse;
-tantum;singularia/pluralia tantum;aux;;;tantum;TODO
-Sgtm;singularia tantum;aux;;;Sgtm;TODO
-Pltm;pluralia tantum;aux;;;Pltm;TODO
-verb_noun;;aux;;;;TODO
-tense;час;aux;;;TEns;
-mood;спосіб;aux;;;MOod;
-voice;стан или залог;aux;;;VOic;TODO
-aspc;вид;aux;;;ASpc;
-trns;категорія перехідності;aux;;;TRns;
-forms;степені порівняння;aux;;;forms;
-ANim;категория живости;aux;;;ANim;
-indecl;не изменяется;aux;;;Fixd;
-bad;искажение;aux;;;Dist;TODO: ведаjу
-refl;;aux;;;Refl;
-V-m;алтернативна форма на -m;aux;;;V-m;
-V-ju;алтернативна форма на -ju;aux;;;V-ju;
-VF-1;алтернативна форма;aux;;;VF-1;
-VF-2;алтернативна форма;aux;;;VF-2;
-anim;одушевлённое;ANim;;;anim;
-inan;неодушевлённое;ANim;;;inan;
-slang;сленг;aux;;;Slng;TODO: фунгуjе
-unknown;ще неопрацьовані слова/форми;aux;;;unknown;Має зникнути взагалі
-pers;особовий (займенник);aux;;;pers;
-form-full;;aux;;;form-full;njego
-form-regl;;aux;;;form-regl;jego
-form-short;;aux;;;form-short;go
-V-flex-1;альтернативны форм 1;aux;;;V-flex-1;
-V-flex-2;альтернативны форм 2;aux;;;V-flex-2;
-noun;именник;post;v_naz;anim,inanim;NOUN;
-pron;заименник;post;v_naz;;NPRO;
-verb;глагол;post;inf;perf,imperf;VERB;
-adj;придавник;post;m,v_naz;;ADJF;
-adjp;причастие;post;m,v_naz;;PRTF;
-adv;присловник;post;;;ADVB;
-advp;деjепричастие;post;;;GRND;
-prep;прєдложник;post;;;PREP;
-preposition;прєдложник;post;;;PREP;
-num;числительное;post;;;NUMR;
-sg;;NMbr;;;sing;
-pl;;NMbr;;;plur;
-singular;;NMbr;;;sing;
-plural;;NMbr;;;plur;
-nom;;CAse;;;nomn;
-gen;;CAse;;;gent;
-dat;;CAse;;;datv;
-acc;;CAse;;;accs;
-ins;;CAse;;;ablt;
-loc;;CAse;;;loct;
-voc;;CAse;;;voct;
-m;мужскы;gndr;;;masc;
-f;женскы;gndr;;;femn;
-n;средни;gndr;;;neut;
-v;глагол;post;;;VERB;
-conj;;post;;;CONJ;
-pf;доконане;aspc;;;perf;
-ipf;недоконане;aspc;;;impf;
-ipf/pf;недоконане или доконане;aspc;;;ipun;
-tr;переходный глагол;TRns;;;tran;
-intr;непереходный глагол;TRns;;;intr;
-intj;междометие;post;;;INTJ;
-prefix;;aux;;;prefix;?
-phrase;;aux;;;phrase;?
-aux;помочны глагол;aux;;;auxv;смогти быти стати
-particle;;aux;;;particle;?
-suffix;;aux;;;suffix;?
-diff;тип числительного;aux;;;diff;пока не парсим числительные
-subst;тип числительного;aux;;;subst;
-mult;тип числительного;aux;;;mult;
-coll;тип числительного;aux;;;coll;
-fract;тип числительного;aux;;;fract;
-ord;тип числительного;aux;;;ord;
-card;тип числительного;aux;;;card;
-poss;тип местоимения;aux;;;poss;пока не парсим местоимения
-int;тип местоимения;aux;;;int;
-indef;тип местоимения;aux;;;indef;
-pers;тип местоимения;aux;;;pers;
-rel;тип местоимения;aux;;;rel;
-rec;тип местоимения;aux;;;rec;
-dem;тип местоимения;aux;;;dem;
-refl1;тип местоимения;aux;;;refl1;может быть тэгом глагола?
-adjective;;;;;ADJF;
-adverb;;;;;ADVB;
-conjunction;;;;;conj;
-pronoun;;;;;NPRO;
-numeral;;;;;NUMR;
-interjection;;;;;INTJ;
-ipf/pf;;;;;perf;костылище
-Abbr;аббревиатура;aux;;;Abbr;
-past;минулий час;tense;;;past;
-future;будучи час;tense;;;futr;
-imperfect;минулий час;tense;;;imperfect;
-1per;1-а особа;PErs;;;1per;
-2per;2-а особа;PErs;;;2per;
-3per;3-а особа;PErs;;;3per;
-present;теперішній час;tense;;;pres;
-impr;наказовий спосіб;mood;;;impr;
-actv;активний;voice;;;actv;
-pasv;пасивний;voice;;;pssv;
-INFN;початкова форма дієслова;verb_type;;;infn;
-V2NOUN;одглаголно име;aux;;;V2NOUN;
-comparative;порівняльна форма;forms;;;COMP;
-forms;степені порівняння;aux;;;forms;
-positive;базова форма;forms;;;compb;
-conditional;кондиционал;tense;;;cond;
-particle;честица;post;;;PRCL;
+name;description;parent;native tags;slovnik name;ud;unimorph;comments
+anim;одушевлённое;animacy;;;animacy=anim;ANIM;
+inan;неодушевлённое;animacy;;;animacy=inan;INAN;
+pf;dokonany vid;aspc;perf;;Aspect=Perf;PFV;
+ipf;nedokonany vid;aspc;impf;;Aspect=Imp;IPFV;
+ipf/pf;obadva vida;aspc;ipun;;N/A;N/A;
+pos;чест молвы;aux;;;---;---;(=POST)
+nmbr;число;aux;;;---;---;
+gndr;род;aux;;;---;---;
+person;особа;aux;;;---;---;
+case;падеж;aux;;;---;---;
+tense;час;aux;;;---;---;
+mood;naklonenje;aux;;;---;---;
+voice;stan ili zalog;aux;;;---;---;
+aspc;vid;aux;;;---;---;
+verb_type;;aux;;;---;---;
+pron_type;;aux;;;---;---;
+valency;категорія перехідності;aux;;;---;---;
+animacy;категория живости;aux;;;---;---;
+indecl;не изменяется;aux;;;N/A;N/A;(=Fixd)
+V-m;atematičny vzor glagola;aux;V-m;;N/A;N/A;
+V-ju;tematičny vzor glagola;aux;V-ju;;N/A;N/A;
+form-full;zaimennik vslěd prědložnika;aux;form-full;;PrepCase=Pre;N/A;njego
+form-regl;zaimennik ne vslěd prědložnika;aux;form-regl;;PrepCase=Npr;N/A;jego
+form-short;zaimennik-klitik;aux;form-short;;Variant=Short;N/A;go
+V-flex-1;alternativny form 1;aux;V-flex-1;;N/A;N/A;Variant=flex1
+V-flex-2;alternativny form 2;aux;V-flex-2;;N/A;N/A;Variant=flex2
+brev;kratȯk pridavnik;aux;;;Variant=Brev|Variant=Short;LGSPEC1;kratok, krasen
+aux;pomoćny glagol;aux;auxv;;AUX;AUX;smogti, byti, stati, uměti, imati
+comparision;степені порівняння;aux;;;---;---;
+nom;;case;;;Case=Nom;NOM;
+gen;;case;;;Case=Gen;GEN;
+dat;;case;;;Case=Dat;DAT;
+acc;;case;;;Case=Acc;ACC;
+ins;;case;;;Case=Ins;INS;
+loc;;case;;;Case=Loc;ESS;
+voc;;case;;;Case=Voc;VOC;
+comp;sravniteljna stupenj sravnenja;comparision;cmpr;;Degree=Cmp;CMPR;
+#adj;sravniteljna stupenj sravnenja;comparision;cmpr;;Degree=Cmp;CMPR;???
+positive;базова форма;comparision;compb;;Degree=Pos;N/A;
+sup;;comparision;sprl;;Degree=Sup;SPRL;
+masc;mųžsky;gndr;masc;;Gender=Masc;MASC;
+femn;žensky;gndr;femn;;Gender=Fem;FEM;
+neut;nevtraĺny;gndr;neut;;Gender=Neut;NEUT;
+m;mųžsky;gndr;masc;;Gender=Masc;MASC;priznak glagola
+f;žensky;gndr;femn;;Gender=Fem;FEM;priznak glagola
+n;nevtraĺny;gndr;neut;;Gender=Neut;NEUT;priznak glagola
+impr;наказовий спосіб;mood;impr;;Mood=Imp;IMP;
+sing;;nmbr;sing;;Number=sing;SG;
+plur;;nmbr;plur;;Number=plur;PL;
+singular;;nmbr;sing;;Number=sing;SG;priznak zaimennika
+plural;;nmbr;plur;;Number=plur;PL;priznak zaimennika
+sg;;nmbr;sing;;Number=sing;SG;
+pl;;nmbr;plur;;Number=plur;PL;
+Sgtm;;nmbr;sing;;Number=sing;SG;takože Number=Coll
+Pltm;;nmbr;plur;;Number=plur;PL;takože Number=Ptan
+1per;1-а особа;person;1per;;Person=1;1;
+2per;2-а особа;person;2per;;Person=2;2;
+3per;3-а особа;person;3per;;Person=3;3;
+noun;imennik;pos;;;NOUN;N;
+pron;zaimennik;pos;;;PRON;PRO;
+verb;glagol;pos;verb;;VERB;V;
+v;glagol;pos;verb;;VERB;V;
+#v;glagol;pos;verb;;VERB;V;???
+adj;pridavnik;pos;;;ADJ;ADJ;
+adv;prislovnik;pos;;;ADV;ADV;
+prep;prědložnik;pos;;;ADP;ADP;(adposition)
+num;числительное;pos;;;NUM;NUM;
+conjunction;;pos;conj;;CCONJ,SCONJ;CONJ;
+intj;междометие;pos;intj;;INTJ;INTJ;
+past;минулий час;tense;past;;Tense=Past;PST;
+future;будучи час;tense;futr;;Tense=Fut;FUT;
+imperfect;минулий час;tense;imperfect;;Tense=Imp;RMT;PST;
+present;теперішній час;tense;pres;;Tense=Pres;PRS;
+conditional;кондиционал;tense;cond;;Mood=Cnd;COND (mood);
+refl;refleksivny glagol;valency;;;Voice=Mid? Reflex=Yes?;REFL;
+tran;переходный глагол;valency;tr;;N/A;TR;
+intr;непереходный глагол;valency;intr;;N/A;INTR;
+INFN;початкова форма дієслова;verb_type;infn;;VerbForm=Inf;NFIN;
+PRTF;pričęsťje;verb_type;prtf;;VerbForm=Part;V.PTCP;unused
+finite;ne infinitiv;verb_type;fint;;VerbForm=Fin;FIN;unused
+converb;;verb_type;;;VerbForm=Conv;V.CNV;polne homoformy Part
+vnoun;;verb_type;;;VerbForm=Vnoun;V.MSDR;haos
+actv;активний;voice;act;;Voice=Act;ACT;
+pasv;пасивний;voice;pass;;Voice=Pass;PASV;
+poss;тип заименника;pron_type;poss;;Poss=Yes;N/A;
+pers;тип заименника;pron_type;prs;;PronType=Prs;DET?;
+indef;тип заименника;pron_type;ind;;PronType=Ind;INDF;
+int;тип заименника;pron_type;int;;PronType=Int;INT;
+dem;тип заименника;pron_type;dem;;PronType=Dem;PROX?;
+rel;тип заименника;pron_type;rel;;PronType=Rel;PROX?;

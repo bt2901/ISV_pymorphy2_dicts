@@ -31,9 +31,11 @@ if RUN_EXPORT:
     )
 
 
-dictionary_path = join(DIR, "interslavic", "static", "words_forms.txt")
-dictionary_out = join(DIR, "pymorphy2-dicts", "out_{}.xml")
-DICTS_DIR = join(DIR, "pymorphy2-dicts")
+# dictionary_path = join(DIR, "interslavic", "static", "words_forms.txt")
+dictionary_path = "tmp_dict.txt"
+
+dictionary_out = join(DIR, "ISV_pymorphy2_dicts", "pymorphy2-dicts", "out_{}.xml")
+DICTS_DIR = join(DIR, "ISV_pymorphy2_dicts", "pymorphy2-dicts")
 
 
 if DEBUG:
@@ -41,9 +43,9 @@ if DEBUG:
     doubleform_signal.connect(log_doubleform)
 
 if RUN_CONVERT:
-    d = Dictionary(dictionary_path, mapping="mapping_isv.csv")
+    d = Dictionary(dictionary_path, mapping=join(DIR, "ISV_pymorphy2_dicts", "mapping_isv.csv"))
     for lang in ['isv_cyr', 'isv_lat', 'isv_etm']:
-        d.export_to_xml(join(DIR, "pymorphy2-dicts", f"out_{lang}.xml"), lang=lang)
+        d.export_to_xml(join(DIR, "ISV_pymorphy2_dicts", "pymorphy2-dicts", f"out_{lang}.xml"), lang=lang)
 
         if DEBUG:
             logging.debug("=" * 50)
@@ -52,13 +54,13 @@ if RUN_CONVERT:
 
 if RUN_BUILD_DICTS:
     for lang in ['isv_cyr', 'isv_lat', 'isv_etm']:
-        out_dir = join(DIR, "pymorphy2-dicts", f"out_{lang}")
+        out_dir = join(DIR, "ISV_pymorphy2_dicts", "pymorphy2-dicts", f"out_{lang}")
         if isdir(out_dir):
             shutil.rmtree(out_dir)
-
+	
         subprocess.check_output(
             ["python", "build-dict.py", dictionary_out.format(lang), out_dir],
-            cwd=join(DIR, "pymorphy2-dicts")
+            cwd=join(DIR, "ISV_pymorphy2_dicts")
         )
 
         print('suffixes.json')
@@ -71,7 +73,7 @@ if RUN_BUILD_DICTS:
         # print(Path(join(DICTS_DIR, 'paradigm.txt')).stat().st_size)
 
 
-out_dir_etm = join(DIR, "pymorphy2-dicts", "out_isv_etm")
+out_dir_etm = join(DIR, "ISV_pymorphy2_dicts", "pymorphy2-dicts", "out_isv_etm")
 
 etm_morph = pymorphy2.MorphAnalyzer(
     out_dir_etm,

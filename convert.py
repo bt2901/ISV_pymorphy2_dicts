@@ -4,11 +4,16 @@ import os.path
 import logging
 import ujson
 
+import sys
+sys.path.append("C:\\dev\\ISV_pymorphy2_dicts")
+from short_adj import make_short_adj
+
 import xml.etree.cElementTree as ET
 
 from unicodecsv import DictReader
 import unicodedata
 from string import whitespace
+import functools
 
 # To add stats collection in inobstrusive way (that can be simply disabled)
 from blinker import signal
@@ -121,7 +126,7 @@ def export_grammemes_description_to_xml(tag_set):
         if tag["parent"] != "aux":
             grammeme.attrib["parent"] = tag["parent"]
         name = ET.SubElement(grammeme, "name")
-        name.text = tag["opencorpora tags"]
+        name.text = tag["native tags"]
 
         alias = ET.SubElement(grammeme, "alias")
         alias.text = tag["name"]
@@ -148,21 +153,21 @@ class TagSet(object):
             r = DictReader(fp, delimiter=';')
 
             for tag in r:
-                # lemma form column represents set of tags that wordform should
-                # have to be threatened as lemma.
-                tag["lemma form"] = filter(None, [s.strip() for s in
-                                           tag["lemma form"].split(",")])
+                ## lemma form column represents set of tags that wordform should
+                ## have to be threatened as lemma.
+                #tag["lemma form"] = filter(None, [s.strip() for s in
+                #                           tag["lemma form"].split(",")])
 
-                tag["divide by"] = filter(
-                    None, [s.strip() for s in tag["divide by"].split(",")])
+                #tag["divide by"] = filter(
+                #    None, [s.strip() for s in tag["divide by"].split(",")])
 
                 # opencopropra tags column maps LT tags to OpenCorpora tags
                 # when possible
-                tag["opencorpora tags"] = (
-                    tag["opencorpora tags"] or tag["name"])
+                tag["native tags"] = (
+                    tag["native tags"] or tag["name"])
 
                 # Helper mapping
-                self.lt2opencorpora[tag["name"]] = tag["opencorpora tags"]
+                self.lt2opencorpora[tag["name"]] = tag["native tags"]
 
                 # Parent column links tag to it's group tag.
                 # For example parent tag for noun is POST tag
@@ -202,10 +207,10 @@ class TagSet(object):
 
             # cmp is a built-in python function
             if a_group == b_group:
-                return cmp(a, b)  # noqa: F821
-            return cmp(a_group, b_group)  # noqa: F821
-
-        return sorted(tags, cmp=inner_cmp)
+                return a > b  
+            return a_group > b_group
+        
+        return sorted(tags, key=functools.cmp_to_key(inner_cmp))
 
 
 class WordForm(object):
@@ -239,6 +244,8 @@ class WordForm(object):
     def __unicode__(self):
         return self.__str__()
 
+
+UNKNOWN_TAGS = {}
 
 class Lemma(object):
     def __init__(self, word, lemma_form_tags):
@@ -279,17 +286,18 @@ class Lemma(object):
         else:
             self.forms[form.tags_signature] = [form]
 
-    def _add_tags_to_element(self, el, tags, mapping):
-        # if self.pos in tags:
+    def _add_tags_to_element(self, el, tags, tag_set_full):
+        tags = tag_set_full.sort_tags(tags)
 
-        # TODO: remove common tags
-        # tags = set(tags) - set([self.pos])
-        # TODO: translate tags here
         for one_tag in tags:
             if one_tag != '':
-                ET.SubElement(el, "g", v=mapping.lt2opencorpora.get(one_tag, one_tag))
+                if  one_tag not in tag_set_full.lt2opencorpora and one_tag not in tag_set_full.lt2opencorpora.values():
+                    UNKNOWN_TAGS[one_tag] = (self.word, self.pos)
+                    # raise NameError
+                else:
+                    ET.SubElement(el, "g", v=tag_set_full.lt2opencorpora.get(one_tag, one_tag))
 
-    def export_to_xml(self, i, mapping, rev=1, lang="isv_cyr"):
+    def export_to_xml(self, i, tag_set_full, rev=1, lang="isv_cyr"):
         translate_func = translation_functions[lang]
         lemma = ET.Element("lemma", id=str(i), rev=str(rev))
         common_tags = list(self.common_tags or set())
@@ -303,7 +311,11 @@ class Lemma(object):
         output_lemma_form = self.lemma_form.form.lower()
         output_lemma_form = translate_func(output_lemma_form)
         l_form = ET.SubElement(lemma, "l", t=output_lemma_form)
-        self._add_tags_to_element(l_form, common_tags, mapping)
+        if "m/f" in common_tags:
+            print(common_tags)
+            print(self.word)
+
+        self._add_tags_to_element(l_form, common_tags, tag_set_full)
 
         for forms in self.forms.values():
             for form in forms:
@@ -318,7 +330,7 @@ class Lemma(object):
 
                 self._add_tags_to_element(el,
                                           set(form.tags) - set(common_tags),
-                                          mapping)
+                                          tag_set_full)
 
         return lemma
 
@@ -489,7 +501,7 @@ def yield_all_verb_forms(forms_obj, pos, base):
     ]
     for time, meta_tag in zip(
         ['prap', 'prpp', 'pfap', 'pfpp'],
-        [{'actv', 'present'}, {'pssv', 'present'}, {'actv', 'past'}, {'pssv', 'past'}]
+        [{'actv', 'present'}, {'pasv', 'present'}, {'actv', 'past'}, {'pasv', 'past'}]
     ):
         # TODO: will fuck up if multi-word verb
         parts = (
@@ -522,7 +534,7 @@ def yield_all_verb_forms(forms_obj, pos, base):
                 yield full_entry, pos | meta_tag | current_tag
 
     # ====== Gerund ======
-    yield forms_obj['gerund'], pos | {"NOUN", "V2NOUN"}
+    yield forms_obj['gerund'], pos | {"noun", "vnoun"}
 
 
 def iterate_json(forms_obj, pos_data, base):
@@ -534,17 +546,34 @@ def iterate_json(forms_obj, pos_data, base):
     if "adj" in pos:
         yield from yield_all_simple_adj_forms(forms_obj, pos_data)
         content = forms_obj['comparison']
-        yield content['positive'][0], {"positive"} | pos_data
+        #if content['positive']:
+        #    yield content['positive'][0], {"positive"} | pos_data
 
-        comp_form = content['comparative'][0]
-        if " " not in comp_form:
-            yield comp_form, {"comparative"} | pos_data
+        if content['comparative']:
+            comp_form = content['comparative'][0]
+            if " " not in comp_form:
+                yield comp_form, {"cmpr"} | pos_data
 
         # TODO: is it right to treat it as adjective??
-        yield content['positive'][1], {"adverb", "positive"} | pos_data
-        comp_form = content['comparative'][1]
-        if " " not in comp_form:
-            yield comp_form, {"adverb", "comparative"} | pos_data
+        if content['positive']:
+            yield content['positive'][1], {"adv", "compb"} | pos_data
+        if content['comparative']:
+            comp_form = content['comparative'][1]
+            if " " not in comp_form:
+                yield comp_form, {"adv", "cmpr"} | pos_data
+        if content['superlative']:
+            comp_form = content['superlative'][0]
+            if " " not in comp_form:
+                yield comp_form, {"adj", "sprl"} | pos_data
+                #print(pos_data)
+                #raise NameError
+            comp_form = content['superlative'][1]
+            if " " not in comp_form:
+                yield comp_form, {"adv", "sprl"} | pos_data
+        # additionaly: short adjective form
+        if True:  # TODO: some condition here, not all adjs allow for 
+            yield make_short_adj(base), {"brev"} | pos_data
+
 
     elif "numeral" in pos or 'pronoun' in pos:
         if forms_obj['type'] == 'adjective':
@@ -602,36 +631,19 @@ class Dictionary(object):
         counter_multiword_verb = 0
         counter_se = 0
         with open(fname, "r", encoding="utf8") as fp:
-            next(fp)
             for i, line in enumerate(fp):
-                raw_data, forms, pos_formatted = line.split("\t")
-                word_id, isv_lemma, addition, pos, *rest = ujson.loads(raw_data)
-                forms_obj_array = ujson.loads(forms)
-
-                # HOTFIX TIME!
-                if word_id == "36649":
-                    pass
-                if word_id == "6181":
-                    pass
-
-                add_tags = [{f"VF-{form_num+1}"} for form_num, _ in enumerate(forms_obj_array)]
-
-                if len(add_tags) == 1:
-                    add_tags = [set()]
-
-                isv_lemmas = isv_lemma.split(",")
-                if "m./f." in pos:
-                    # example: "6181" "križ","","m./f.","1","cross",
-                    isv_lemmas = [isv_lemma, isv_lemma]
-                    add_tags = [{'masc'}, {'femn'}]
-                for add_tag, forms_obj, isv_lemma_current in zip(add_tags, forms_obj_array, isv_lemmas):
-
+                    isv_lemma_current, forms, pos, addition, pos_formatted = line.split("\t")
+                    forms_obj = ujson.loads(forms)
                     isv_lemma_current = isv_lemma_current.strip()
+                    add_tag = set()
                     details_set = set(getArr(pos)) | add_tag
                     # if infer_pos is None, then fallback to the first form
                     local_pos = infer_pos(details_set) or pos
                     if local_pos == "noun":
                         details_set |= {'noun'}
+                    if pos == "m./f.":
+                        pos = "m" if "masc" in pos_formatted else "f"
+                        details_set -= {"m/f"}
 
                     if not isinstance(forms_obj, dict):
                         if forms_obj != '':
@@ -657,10 +669,11 @@ class Dictionary(object):
                             # TODO TODO XXX
                             if "verb" not in pos_formatted:
                                 counter_multiword_verb += 1
-                                print(isv_lemma_current.split(), pos_formatted)
-                                print(forms_obj)
+                                #print(isv_lemma_current.split(), pos_formatted)
+                                #print(forms_obj)
                             else:
-                                print(isv_lemma_current.split(), pos_formatted, forms_obj['infinitive'])
+                                #print(isv_lemma_current.split(), pos_formatted, forms_obj['infinitive'])
+                                pass
                         # continue
 
                     current_lemma = Lemma(
@@ -669,7 +682,13 @@ class Dictionary(object):
                     )
                     number_forms = set()
                     for current_form, tag_set in iterate_json(forms_obj, details_set, isv_lemma_current):
+                        if current_form is None:
+                            print(isv_lemma_current, tag_set)
+                            continue
+                        #if " , " in current_form:
+                        #    all_forms = current_form.split(" , ")
                         if "/" in current_form:
+                            # print(current_form)
                             all_forms = current_form.split("/")
                         else:
                             all_forms = [current_form]
@@ -739,3 +758,5 @@ class Dictionary(object):
                 lemmata.append(lemma_xml)
 
         tree.write(fname, encoding="utf-8")
+        if (UNKNOWN_TAGS):
+            raise AssertionError
