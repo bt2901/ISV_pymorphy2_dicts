@@ -150,7 +150,7 @@ class TagSet(object):
         self.lt2opencorpora = {}
 
         with open(fname, 'rb') as fp:
-            r = DictReader(fp, delimiter=';')
+            r = DictReader(fp, delimiter='\t')
 
             for tag in r:
                 ## lemma form column represents set of tags that wordform should
@@ -311,9 +311,6 @@ class Lemma(object):
         output_lemma_form = self.lemma_form.form.lower()
         output_lemma_form = translate_func(output_lemma_form)
         l_form = ET.SubElement(lemma, "l", t=output_lemma_form)
-        if "m/f" in common_tags:
-            print(common_tags)
-            print(self.word)
 
         self._add_tags_to_element(l_form, common_tags, tag_set_full)
 
@@ -622,7 +619,7 @@ INDECLINABLE_POS = {'adverb', 'conjunction', 'preposition', 'interjection', 'par
 class Dictionary(object):
     def __init__(self, fname, mapping):
         if not mapping:
-            mapping = os.path.join(os.path.dirname(__file__), "mapping_isv.csv")
+            mapping = os.path.join(os.path.dirname(__file__), "mapping_isv.tsv")
 
         self.mapping = mapping
         self.lemmas = {}

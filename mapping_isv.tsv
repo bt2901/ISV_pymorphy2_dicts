@@ -1,0 +1,91 @@
+name	description	parent	native tags	ud	unimorph	comments
+anim	одушевлённое	animacy		animacy=anim	ANIM	
+inan	неодушевлённое	animacy		animacy=inan	INAN	
+pf	dokonany vid	aspc	perf	Aspect=Perf	PFV	
+ipf	nedokonany vid	aspc	impf	Aspect=Imp	IPFV	
+ipf/pf	obadva vida	aspc	ipun	N/A	N/A	
+pos	чест молвы	aux		---	---	(=POST)
+nmbr	число	aux		---	---	
+gndr	род	aux		---	---	
+person	особа	aux		---	---	
+case	падеж	aux		---	---	
+tense	час	aux		---	---	
+mood	naklonenje	aux		---	---	
+voice	stan ili zalog	aux		---	---	
+aspc	vid	aux		---	---	
+verb_type		aux		---	---	
+pron_type		aux		---	---	
+valency	категорія перехідності	aux		---	---	
+animacy	категория живости	aux		---	---	
+indecl	не изменяется	aux		N/A	N/A	(=Fixd)
+V-m	atematičny vzor glagola	aux	V-m	N/A	N/A	
+V-ju	tematičny vzor glagola	aux	V-ju	N/A	N/A	
+form-full	zaimennik vslěd prědložnika	aux	form-full	PrepCase=Pre	N/A	njego
+form-regl	zaimennik ne vslěd prědložnika	aux	form-regl	PrepCase=Npr	N/A	jego
+form-short	zaimennik-klitik	aux	form-short	Variant=Short	N/A	go
+V-flex-1	alternativny form 1	aux	V-flex-1	N/A	N/A	Variant=flex1
+V-flex-2	alternativny form 2	aux	V-flex-2	N/A	N/A	Variant=flex2
+brev	kratȯk pridavnik	aux		Variant=Brev|Variant=Short	LGSPEC1	kratok, krasen
+aux	pomoćny glagol	aux	auxv	AUX	AUX	smogti, byti, stati, uměti, imati
+comparision	степені порівняння	aux		---	---	
+nom		case		Case=Nom	NOM	
+gen		case		Case=Gen	GEN	
+dat		case		Case=Dat	DAT	
+acc		case		Case=Acc	ACC	
+ins		case		Case=Ins	INS	
+loc		case		Case=Loc	ESS	
+voc		case		Case=Voc	VOC	
+comp	sravniteljna stupenj sravnenja	comparision	cmpr	Degree=Cmp	CMPR	
+#adj	sravniteljna stupenj sravnenja	comparision	cmpr	Degree=Cmp	CMPR	???
+positive	базова форма	comparision	compb	Degree=Pos	N/A	
+sup		comparision	sprl	Degree=Sup	SPRL	
+masc	mųžsky	gndr	masc	Gender=Masc	MASC	
+femn	žensky	gndr	femn	Gender=Fem	FEM	
+neut	nevtraĺny	gndr	neut	Gender=Neut	NEUT	
+m	mųžsky	gndr	masc	Gender=Masc	MASC	priznak glagola
+f	žensky	gndr	femn	Gender=Fem	FEM	priznak glagola
+n	nevtraĺny	gndr	neut	Gender=Neut	NEUT	priznak glagola
+impr	наказовий спосіб	mood	impr	Mood=Imp	IMP	
+sing		nmbr	sing	Number=sing	SG	
+plur		nmbr	plur	Number=plur	PL	
+singular		nmbr	sing	Number=sing	SG	priznak zaimennika
+plural		nmbr	plur	Number=plur	PL	priznak zaimennika
+sg		nmbr	sing	Number=sing	SG	
+pl		nmbr	plur	Number=plur	PL	
+Sgtm		nmbr	sing	Number=sing	SG	takože Number=Coll
+Pltm		nmbr	plur	Number=plur	PL	takože Number=Ptan
+1per	1-а особа	person	1per	Person=1	1	
+2per	2-а особа	person	2per	Person=2	2	
+3per	3-а особа	person	3per	Person=3	3	
+noun	imennik	pos		NOUN	N	
+pron	zaimennik	pos		PRON	PRO	
+verb	glagol	pos	verb	VERB	V	
+v	glagol	pos	verb	VERB	V	
+#v	glagol	pos	verb	VERB	V	???
+adj	pridavnik	pos		ADJ	ADJ	
+adv	prislovnik	pos		ADV	ADV	
+prep	prědložnik	pos		ADP	ADP	(adposition)
+num	числительное	pos		NUM	NUM	
+conjunction		pos	conj	CCONJ,SCONJ	CONJ	
+intj	междометие	pos	intj	INTJ	INTJ	
+past	минулий час	tense	past	Tense=Past	PST	
+future	будучи час	tense	futr	Tense=Fut	FUT	
+imperfect	минулий час	tense	imperfect	Tense=Imp	RMT	PST
+present	теперішній час	tense	pres	Tense=Pres	PRS	
+conditional	кондиционал	tense	cond	Mood=Cnd	COND (mood)	
+refl	refleksivny glagol	valency		Voice=Mid? Reflex=Yes?	REFL	
+tran	переходный глагол	valency	tr	N/A	TR	
+intr	непереходный глагол	valency	intr	N/A	INTR	
+INFN	початкова форма дієслова	verb_type	infn	VerbForm=Inf	NFIN	
+PRTF	pričęsťje	verb_type	prtf	VerbForm=Part	V.PTCP	unused
+finite	ne infinitiv	verb_type	fint	VerbForm=Fin	FIN	unused
+converb		verb_type		VerbForm=Conv	V.CNV	polne homoformy Part
+vnoun		verb_type		VerbForm=Vnoun	V.MSDR	haos
+actv	активний	voice	act	Voice=Act	ACT	
+pasv	пасивний	voice	pass	Voice=Pass	PASV	
+poss	тип заименника	pron_type	poss	Poss=Yes	N/A	
+pers	тип заименника	pron_type	prs	PronType=Prs	DET?	
+indef	тип заименника	pron_type	ind	PronType=Ind	INDF	
+int	тип заименника	pron_type	int	PronType=Int	INT	
+dem	тип заименника	pron_type	dem	PronType=Dem	PROX?	
+rel	тип заименника	pron_type	rel	PronType=Rel	PROX?	

@@ -1,4 +1,7 @@
-pymorphy2
+dawg2
+git+https://github.com/pymorphy2-fork/pymorphy2
+tqdm
+json5
 ujson
 unicodecsv
 blinker
