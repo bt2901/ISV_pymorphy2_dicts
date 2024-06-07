@@ -7,13 +7,12 @@ import ujson
 import sys
 sys.path.append("C:\\dev\\ISV_pymorphy2_dicts")
 from short_adj import make_short_adj
+from transliteration import translation_functions
+from xml_stuff import export_grammemes_description_to_xml, TagSet, Lemma, WordForm
+
 
 import xml.etree.cElementTree as ET
 
-from unicodecsv import DictReader
-import unicodedata
-from string import whitespace
-import functools
 
 # To add stats collection in inobstrusive way (that can be simply disabled)
 from blinker import signal
@@ -31,74 +30,16 @@ def getArr(details_string):
     ]
 
 
-# TODO: move this to normalizacija.py or constants.py
-diacr_letters = "žčšěйćżęųœ"
-plain_letters = "жчшєjчжеуо"
-
-lat_alphabet = "abcčdeěfghijjklmnoprsštuvyzž"
-cyr_alphabet = "абцчдеєфгхийьклмнопрсштувызж"
-
-
-save_diacrits = str.maketrans(diacr_letters, plain_letters)
-cyr2lat_trans = str.maketrans(cyr_alphabet, lat_alphabet)
-lat2cyr_trans = str.maketrans(lat_alphabet, cyr_alphabet)
-
-nms_alphabet = "ęėåȯųćđřŕľńťďśźìóáýéíĵœ"
-std_alphabet = "eeaoučđrrlntdszioayeijo"
-
-nms2std_trans = str.maketrans(nms_alphabet, std_alphabet)
-
-extended_nms_alphabet = "áàâāíìîīĭıąǫũéēĕëèœóôŏöòȯĵĺļǉýłçʒřťďśńź"
-regular_etym_alphabet = "aaaaiiiiiiųųųeeėėėoooȯȯȯȯjľľľylczŕťďśńź"
-
-ext_nms2std_nms_trans = str.maketrans(extended_nms_alphabet, regular_etym_alphabet)
-
-
-def lat2cyr(thestring):
-
-    # "e^" -> "ê"
-    # 'z\u030C\u030C\u030C' -> 'ž\u030C\u030C'
-    thestring = unicodedata.normalize(
-        'NFKC',
-        thestring
-    ).lower().replace("\n", " ")
-
-    # remove all diacritics beside haceks/carons
-    thestring = unicodedata.normalize(
-        'NFKD',
-        thestring.translate(save_diacrits)
-    )
-    filtered = "".join(c for c in thestring if c in whitespace or c.isalpha())
-    # cyrillic to latin
-    filtered = filtered.replace(
-        "đ", "dž").replace(
-        # Serbian and Macedonian
-        "љ", "ль").replace("њ", "нь").replace(
-        # Russian
-        "я", "йа").replace("ю", "йу").replace("ё", "йо")
-
-    return filtered.translate(lat2cyr_trans).replace("й", "ј").replace("ь", "ј").strip()
-
-
-def lat2etm(thestring):
-    # hack with dʒ
-    return thestring.translate(ext_nms2std_nms_trans).replace("đ", "dʒ").strip()
-
-
-def lat2std(thestring):
-    return thestring.translate(nms2std_trans).replace("đ", "dž").strip()
-
-
-translation_functions = {
-    "isv_cyr": lat2cyr,
-    "isv_lat": lat2std,
-    "isv_etm": lat2etm,
-}
 
 VERB_AUX_WORDS = {'(je)', 'sę', '(sųt)', 'ne'}
+INDECLINABLE_POS = {'adverb', 'conjunction', 'preposition', 'interjection', 'particle', 'pronoun', 'numeral'}
 
 
 def infer_pos(arr):
+    if '#v' in arr:  # TODO: this should be fixed elsewhere
+        return 'verb'
+    if '#adj' in arr:  # TODO: this should be fixed elsewhere
+        return 'adjective'
     if 'adj' in arr:
         return 'adjective'
     if set(arr) & {'f', 'n', 'm', 'm/f'}:
@@ -119,217 +60,6 @@ def infer_pos(arr):
         return 'verb'
 
 
-def export_grammemes_description_to_xml(tag_set):
-    grammemes = ET.Element("grammemes")
-    for tag in tag_set.full.values():
-        grammeme = ET.SubElement(grammemes, "grammeme")
-        if tag["parent"] != "aux":
-            grammeme.attrib["parent"] = tag["parent"]
-        name = ET.SubElement(grammeme, "name")
-        name.text = tag["native tags"]
-
-        alias = ET.SubElement(grammeme, "alias")
-        alias.text = tag["name"]
-
-        description = ET.SubElement(grammeme, "description")
-        description.text = tag["description"]
-
-    return grammemes
-
-
-class TagSet(object):
-    """
-    Class that represents LanguageTool tagset
-    Can export it to OpenCorpora XML
-    Provides some shorthands to simplify checks/conversions
-    """
-    def __init__(self, fname):
-        self.all = []
-        self.full = {}
-        self.groups = []
-        self.lt2opencorpora = {}
-
-        with open(fname, 'rb') as fp:
-            r = DictReader(fp, delimiter='\t')
-
-            for tag in r:
-                ## lemma form column represents set of tags that wordform should
-                ## have to be threatened as lemma.
-                #tag["lemma form"] = filter(None, [s.strip() for s in
-                #                           tag["lemma form"].split(",")])
-
-                #tag["divide by"] = filter(
-                #    None, [s.strip() for s in tag["divide by"].split(",")])
-
-                # opencopropra tags column maps LT tags to OpenCorpora tags
-                # when possible
-                tag["native tags"] = (
-                    tag["native tags"] or tag["name"])
-
-                # Helper mapping
-                self.lt2opencorpora[tag["name"]] = tag["native tags"]
-
-                # Parent column links tag to it's group tag.
-                # For example parent tag for noun is POST tag
-                # Parent for m (masculine) is gndr (gender group)
-                if not hasattr(self, tag["parent"]):
-                    setattr(self, tag["parent"], [])
-
-                attr = getattr(self, tag["parent"])
-                attr.append(tag["name"])
-
-                # aux is our auxiliary tag to connect our group tags
-                if tag["parent"] != "aux":
-                    self.all.append(tag["name"])
-
-                # We are storing order of groups that appears here to later
-                # sort tags by their groups during export
-                if tag["parent"] not in self.groups:
-                    self.groups.append(tag["parent"])
-
-                self.full[tag["name"]] = tag
-
-    def _get_group_no(self, tag_name):
-        """
-        Takes tag name and returns the number of the group to which tag belongs
-        """
-
-        if tag_name in self.full:
-            return self.groups.index(self.full[tag_name]["parent"])
-        else:
-            return len(self.groups)
-
-    def sort_tags(self, tags):
-        # TODO: this function is not used, but the output would be nicer if it were
-        def inner_cmp(a, b):
-            a_group = self._get_group_no(a)
-            b_group = self._get_group_no(b)
-
-            # cmp is a built-in python function
-            if a_group == b_group:
-                return a > b  
-            return a_group > b_group
-        
-        return sorted(tags, key=functools.cmp_to_key(inner_cmp))
-
-
-class WordForm(object):
-    """
-    Class that represents single word form.
-    Initialized out of form and tags strings from LT dictionary.
-    """
-    def __init__(self, form, tags, is_lemma=False):
-        if ":&pron" in tags:
-            tags = re.sub(
-                "([a-z][^:]+)(.*):&pron((:pers|:refl|:pos|:dem|:def|:int" +
-                "|:rel|:neg|:ind|:gen)+)(.*)", "pron\\3\\2\\4", tags)
-        self.form, self.tags = form, tags
-
-        # self.tags = map(strip_func, self.tags.split(","))
-        self.tags = {s.strip() for s in self.tags}
-        self.is_lemma = is_lemma
-
-        # tags signature is string made out of sorted list of wordform tags
-        # This is a workout for rare cases when some wordform has
-        # noun:m:v_naz and another has noun:v_naz:m
-        self.tags_signature = ",".join(sorted(self.tags))
-
-        # Here we are trying to determine exact part of speech for this
-        # wordform
-        self.pos = infer_pos(self.tags)
-
-    def __str__(self):
-        return "<%s: %s>" % (self.form, self.tags_signature)
-
-    def __unicode__(self):
-        return self.__str__()
-
-
-UNKNOWN_TAGS = {}
-
-class Lemma(object):
-    def __init__(self, word, lemma_form_tags):
-        self.word = word
-
-        self.lemma_form = WordForm(word, lemma_form_tags, True)
-        self.pos = self.lemma_form.pos
-        self.forms = {}
-        self.common_tags = None
-
-        self.add_form(self.lemma_form)
-
-    def __str__(self):
-        return "%s" % self.lemma_form
-
-    @property
-    def lemma_signature(self):
-        return (self.word,) + tuple(self.common_tags)
-
-    def add_form(self, form):
-        if self.common_tags is not None:
-            self.common_tags = self.common_tags.intersection(form.tags)
-        else:
-            self.common_tags = set(form.tags)
-
-        if (form.tags_signature in self.forms and
-                form.form != self.forms[form.tags_signature][0].form):
-            doubleform_signal.send(self, tags_signature=form.tags_signature)
-
-            self.forms[form.tags_signature].append(form)
-
-            logging.debug(
-                "lemma %s got %s forms with same tagset %s: %s" %
-                (self, len(self.forms[form.tags_signature]),
-                 form.tags_signature,
-                 ", ".join(map(lambda x: x.form,
-                               self.forms[form.tags_signature]))))
-        else:
-            self.forms[form.tags_signature] = [form]
-
-    def _add_tags_to_element(self, el, tags, tag_set_full):
-        tags = tag_set_full.sort_tags(tags)
-
-        for one_tag in tags:
-            if one_tag != '':
-                if  one_tag not in tag_set_full.lt2opencorpora and one_tag not in tag_set_full.lt2opencorpora.values():
-                    UNKNOWN_TAGS[one_tag] = (self.word, self.pos)
-                    # raise NameError
-                else:
-                    ET.SubElement(el, "g", v=tag_set_full.lt2opencorpora.get(one_tag, one_tag))
-
-    def export_to_xml(self, i, tag_set_full, rev=1, lang="isv_cyr"):
-        translate_func = translation_functions[lang]
-        lemma = ET.Element("lemma", id=str(i), rev=str(rev))
-        common_tags = list(self.common_tags or set())
-
-        if not common_tags:
-            logging.debug(
-                "Lemma %s has no tags at all" % self.lemma_form)
-
-            return None
-
-        output_lemma_form = self.lemma_form.form.lower()
-        output_lemma_form = translate_func(output_lemma_form)
-        l_form = ET.SubElement(lemma, "l", t=output_lemma_form)
-
-        self._add_tags_to_element(l_form, common_tags, tag_set_full)
-
-        for forms in self.forms.values():
-            for form in forms:
-                output_form = form.form.lower()
-                output_form = translate_func(output_form)
-                el = ET.Element("f", t=output_form)
-                if form.is_lemma:
-                    if len(self.forms) == 1:
-                        lemma.insert(1, el)
-                else:
-                    lemma.append(el)
-
-                self._add_tags_to_element(el,
-                                          set(form.tags) - set(common_tags),
-                                          tag_set_full)
-
-        return lemma
 
 
 def yield_all_simple_adj_forms(forms_obj, pos):
@@ -612,10 +342,6 @@ def iterate_json(forms_obj, pos_data, base):
     return base, pos_data
 
 
-base_tag_set = {}
-INDECLINABLE_POS = {'adverb', 'conjunction', 'preposition', 'interjection', 'particle', 'pronoun', 'numeral'}
-
-
 class Dictionary(object):
     def __init__(self, fname, mapping):
         if not mapping:
@@ -630,12 +356,18 @@ class Dictionary(object):
         with open(fname, "r", encoding="utf8") as fp:
             for i, line in enumerate(fp):
                     isv_lemma_current, forms, pos, addition, pos_formatted = line.split("\t")
+                    pos_formatted = pos_formatted.strip()
                     forms_obj = ujson.loads(forms)
                     isv_lemma_current = isv_lemma_current.strip()
                     add_tag = set()
                     details_set = set(getArr(pos)) | add_tag
                     # if infer_pos is None, then fallback to the first form
                     local_pos = infer_pos(details_set) or pos
+                    # temporary check: if everything is OK, I can get rid of `infer_pos` function
+                    if (local_pos != pos_formatted.split(" ")[0]):
+                        print(isv_lemma_current)
+                        print([local_pos, pos_formatted])
+                        assert(local_pos == pos_formatted)
                     if local_pos == "noun":
                         details_set |= {'noun'}
                     if pos == "m./f.":
@@ -676,6 +408,7 @@ class Dictionary(object):
                     current_lemma = Lemma(
                         isv_lemma_current,
                         lemma_form_tags=details_set,
+                        exact_pos=local_pos,
                     )
                     number_forms = set()
                     for current_form, tag_set in iterate_json(forms_obj, details_set, isv_lemma_current):
@@ -702,6 +435,7 @@ class Dictionary(object):
                             current_lemma.add_form(WordForm(
                                 single_form,
                                 tags=tag_set | add_tag,
+                                exact_pos=local_pos,
                             ))
                         if local_pos in {"noun", "numeral"}:
                             number_forms |= {
@@ -736,8 +470,10 @@ class Dictionary(object):
         lemmata = ET.SubElement(root, "lemmata")
         known_pronouns = {}
 
+        translate_func = translation_functions[lang]
+
         for i, lemma in enumerate(self.lemmas.values()):
-            lemma_xml = lemma.export_to_xml(i + 1, tag_set_full, lang=lang)
+            lemma_xml = lemma.export_to_xml(i + 1, tag_set_full, translate_func)
             if lemma_xml is not None:
                 if "pron" in lemma.lemma_form.tags:
                     signature = "|".join(
@@ -755,5 +491,3 @@ class Dictionary(object):
                 lemmata.append(lemma_xml)
 
         tree.write(fname, encoding="utf-8")
-        if (UNKNOWN_TAGS):
-            raise AssertionError

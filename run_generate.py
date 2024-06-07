@@ -43,7 +43,7 @@ if DEBUG:
     doubleform_signal.connect(log_doubleform)
 
 if RUN_CONVERT:
-    d = Dictionary(dictionary_path, mapping=join(DIR, "ISV_pymorphy2_dicts", "mapping_isv.csv"))
+    d = Dictionary(dictionary_path, mapping=join(DIR, "ISV_pymorphy2_dicts", "mapping_isv.tsv"))
     for lang in ['isv_cyr', 'isv_lat', 'isv_etm']:
         d.export_to_xml(join(DIR, "ISV_pymorphy2_dicts", "pymorphy2-dicts", f"out_{lang}.xml"), lang=lang)
 
